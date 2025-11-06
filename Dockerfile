@@ -1,12 +1,12 @@
-# Use the latest OpenJDK 22 as base image
+# Use the latest OpenJDK 22 image
 FROM openjdk:22-jdk
 
-# Set working directory inside the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy Maven configuration and source code
-COPY pom.xml .
-COPY src ./src
+# Copy Maven files and source code (inside the 'app' subfolder)
+COPY app/pom.xml .
+COPY app/src ./src
 
 # Install Maven and build the project
 RUN apt-get update && apt-get install -y maven
