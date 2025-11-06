@@ -1,19 +1,27 @@
-# Use the latest OpenJDK 22 image
-FROM openjdk:22-jdk
+# --- Stage 1: Build the application with Maven ---
+FROM maven:3.9.6-eclipse-temurin-22 AS build
 
-# Set the working directory inside the container
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy Maven files and source code (inside the 'app' subfolder)
+# Copy project files from nested 'app' directory
 COPY app/pom.xml .
 COPY app/src ./src
 
-# Install Maven and build the project
-RUN apt-get update && apt-get install -y maven
+# Package the application (skip tests for faster build)
 RUN mvn clean package -DskipTests
 
-# Expose the Spring Boot default port
+
+# --- Stage 2: Run the built JAR with JDK ---
+FROM eclipse-temurin:22-jdk
+
+WORKDIR /app
+
+# Copy the packaged jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose Spring Boot port
 EXPOSE 8080
 
-# Run the built JAR file
-CMD ["java", "-jar", "target/app-0.0.1-SNAPSHOT.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
